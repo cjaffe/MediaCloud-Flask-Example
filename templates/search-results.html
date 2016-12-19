@@ -3,6 +3,8 @@
 {% block title %}Search Results{% endblock %}
 
 {% block content %}
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
 
 <div class="row">
 
@@ -12,10 +14,48 @@
 
     <p>You searched for "{{keywords}}"</p>
 
-    <p>In the US Mainstream Media online there have {{ sentenceCount }} sentences matching your search so far this year.</p>
+    <p>In the US Mainstream Media online there have {{ sentenceCount }} sentences matching your search in the period between {{ start }} and {{ end }}.</p>
+
+    <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto;"></div>
 
   </div>
 
-</div>    
+</div> 
+
+<script type="text/javascript">
+    Highcharts.chart('container', {
+        title: {
+            text: 'Searches for \'{{ keywords }}\' over time',
+            x: -20 //center
+        },
+        xAxis: {
+            categories: {{ xaxis|safe }}
+        },
+        yAxis: {
+            title: {
+                text: 'Mentions'
+            },
+            plotLines: [{
+                value: 0,
+                width: 1,
+                color: '#808080'
+            }]
+        },
+        tooltip: {
+            valueSuffix: ' mentions'
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'right',
+            verticalAlign: 'middle',
+            borderWidth: 0
+        },
+        series: [{
+            name: '{{ keywords }}',
+            data: {{ yaxis|safe }}
+        }]
+    });
+
+</script>  
 
 {% endblock %}

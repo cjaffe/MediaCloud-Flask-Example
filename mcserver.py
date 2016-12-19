@@ -28,13 +28,27 @@ def home():
 @app.route("/search",methods=['POST'])
 def search_results():
     keywords = request.form['keywords']
-    now = datetime.datetime.now()
+    startdate = request.form['startdate']
+    enddate = request.form['enddate']
+    # Create datetime with datetime.datetime(year, month, day)
+    start = datetime.date(int(startdate[0:4]), int(startdate[5:7]), int(startdate[8:]))
+    end = datetime.date(int(enddate[0:4]), int(enddate[5:7]), int(enddate[8:]))
     results = mc.sentenceCount(keywords,
-        solr_filter=[mc.publish_date_query( datetime.date( 2015, 1, 1), 
-                                            datetime.date( now.year, now.month, now.day) ),
-                     'media_sets_id:1' ])
+        solr_filter=[mc.publish_date_query( start, end ),
+                     'tags_id_media:1' ], 
+        split=True,
+        split_start_date=startdate,
+        split_end_date=enddate )
+    splits = results['split']
+    splits.pop('end', None)
+    splits.pop('gap', None)
+    splits.pop('start', None)
+    data = [[k[0:10], v] for k, v in splits.items()]
+    data.sort()
+    xaxis = [str(r[0]) for r in data]
+    yaxis = [r[1] for r in data]
     return render_template("search-results.html", 
-        keywords=keywords, sentenceCount=results['count'] )
+        keywords=keywords, sentenceCount=results['count'], start=startdate, end=enddate, xaxis=xaxis, yaxis=yaxis )
 
 if __name__ == "__main__":
     app.debug = True
